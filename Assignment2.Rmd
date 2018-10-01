@@ -1,0 +1,115 @@
+---
+title: "Scientific programming Assignment2"
+output: html_document
+---
+Name: Daphne Leunissen  
+Date: 24-09-2018
+
+``` {r packages}
+
+# install package
+install.packages("pls")
+install.packages("caret")
+
+# load package
+library(rcdklibs)
+library(pls)
+library(caret)
+
+```
+
+## R Markdown
+
+This is an R Markdown document of assignment 2 Making multivariate statistics reproducible. 
+
+```{r setup}
+
+# set working directory
+setwd("C:\\Users\\daphn\\OneDrive\\Documenten\\Master Systems Biology\\Scientific programming\\assignment2\\")
+
+# import data
+data.raw <- read.csv("AID_624202_datatable2.txt", sep="\t", header = T, row.names = 1)
+
+# import descriptors
+descriptors <- read.csv("descriptors.txt", sep="\t", header = T, row.names = 1)
+
+```
+
+``` {r preprocessing}
+
+# remove all columns with all zeros
+
+
+
+# remove all columns full of NA values
+
+
+```
+
+Combine the descriptor file with activity score:
+Match molSIDs from descriptors file with PUBCHEM_SID in the datatable file and extract the activity score from datatable file.
+Than add the activity score to the descriptors file. 
+``` {r activity score}
+# match SIDs
+row.numbers <- as.data.frame(match(descriptors[,1], data.raw[,1]))
+colnames(row.numbers) <- "matching row numbers"
+
+#extract activity score of these row numbers
+activity.score <- as.data.frame(data.raw[row.numbers[,1], 4])
+colnames(activity.score) <- "Activity_score"
+
+# add activity score to descriptors matrix
+descriptors2 <- cbind(descriptors, activity.score)
+
+``` 
+
+Divide the data in training and test set, 80% and 20% respectively  
+``` {r processing}
+# randomly select 80% of the data to be part of the training set and use the rest of the sample for the test set
+# train.set3 <- descriptors2[sample(nrow(descriptors2), 840), ]
+
+set.seed(123)
+
+smp_size <- floor(0.80 * nrow(descriptors2))
+train.ind <- sample(nrow(descriptors2), size = smp_size)
+train.set <- descriptors2[train.ind, ]
+test.set <- descriptors2[-train.ind, ]
+
+``` 
+
+Normalize the data
+``` {r normalization}
+# scaling without the activity score column?
+train.set1 <- train.set[,-247]
+test.set1 <- test.set[,-247]
+# scaling without the molSIDs column?
+train.set2 <- train.set1[,-1]
+test.set2 <- test.set1[,-1]
+
+train.norm <- as.data.frame(scale(train.set2), center = TRUE, scale = TRUE)
+#train.norm <- preProcess(train.set, method=c("center", "scale"))
+test.norm <- as.data.frame(scale(test.set2), center = TRUE, scale = TRUE)
+
+boxplot(test.norm)
+
+``` 
+
+Perform variable selection ?
+
+
+Partial least squares, pls function
+``` {r model prediction}
+
+pred.model <- plsr()
+
+``` 
+
+Crossvalidation 
+``` {r crossvalidation}
+
+
+``` 
+
+### Including Plots
+Scatter plot of model predictions (PUBCHEM_ACTIVITY_SCORE vs experimental value)
+
