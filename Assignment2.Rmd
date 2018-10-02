@@ -1,15 +1,19 @@
 ---
 title: "Scientific programming Assignment2"
 output: html_document
+author: Daphne Leunissen
 ---
-Name: Daphne Leunissen  
-Date: 24-09-2018
+## R Markdown
 
+This is an R Markdown document of assignment 2 Making multivariate statistics reproducible. 
+
+### Loading packages
+The first step is installing and loading packages. 
 ``` {r packages}
 
 # install package
-install.packages("pls")
-install.packages("caret")
+#install.packages("pls")
+#install.packages("caret")
 
 # load package
 library(rcdklibs)
@@ -18,10 +22,8 @@ library(caret)
 
 ```
 
-## R Markdown
-
-This is an R Markdown document of assignment 2 Making multivariate statistics reproducible. 
-
+### Import data
+Next I need to set my working directory and will import the datatable as well as the descriptors file.
 ```{r setup}
 
 # set working directory
@@ -35,6 +37,8 @@ descriptors <- read.csv("descriptors.txt", sep="\t", header = T, row.names = 1)
 
 ```
 
+### Preprocessing data
+The columns that contain only zeros/NA values will be removed. Also the other NA values will be removed.
 ``` {r preprocessing}
 
 # remove all columns with all zeros
@@ -46,9 +50,8 @@ descriptors <- read.csv("descriptors.txt", sep="\t", header = T, row.names = 1)
 
 ```
 
-Combine the descriptor file with activity score:
-Match molSIDs from descriptors file with PUBCHEM_SID in the datatable file and extract the activity score from datatable file.
-Than add the activity score to the descriptors file. 
+### Combining descriptor file with activity score
+The molSIDs from the descriptors file are matches with the PUBCHEM_SID in the datatable file. After which the activity score will be extracted from the datatable file and added to the descriptors file. 
 ``` {r activity score}
 # match SIDs
 row.numbers <- as.data.frame(match(descriptors[,1], data.raw[,1]))
@@ -63,6 +66,7 @@ descriptors2 <- cbind(descriptors, activity.score)
 
 ``` 
 
+### Dividing the data
 Divide the data in training and test set, 80% and 20% respectively  
 ``` {r processing}
 # randomly select 80% of the data to be part of the training set and use the rest of the sample for the test set
@@ -77,7 +81,8 @@ test.set <- descriptors2[-train.ind, ]
 
 ``` 
 
-Normalize the data
+### Scaling the data
+The data will be scaled using the scale function.
 ``` {r normalization}
 # scaling without the activity score column?
 train.set1 <- train.set[,-247]
@@ -90,26 +95,24 @@ train.norm <- as.data.frame(scale(train.set2), center = TRUE, scale = TRUE)
 #train.norm <- preProcess(train.set, method=c("center", "scale"))
 test.norm <- as.data.frame(scale(test.set2), center = TRUE, scale = TRUE)
 
-boxplot(test.norm)
-
 ``` 
 
 Perform variable selection ?
 
-
-Partial least squares, pls function
+### Partial Least Squares
+To model the data Partial least squares is performed using the pls function.
 ``` {r model prediction}
 
-pred.model <- plsr()
+#pred.model <- plsr()
 
 ``` 
 
-Crossvalidation 
+### Crossvalidation
+Tuning the model. 
 ``` {r crossvalidation}
 
 
 ``` 
 
 ### Including Plots
-Scatter plot of model predictions (PUBCHEM_ACTIVITY_SCORE vs experimental value)
-
+Scatter plot of model predictions (PUBCHEM_ACTIVITY_SCORE vs experimental value).
