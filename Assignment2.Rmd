@@ -101,7 +101,15 @@ Perform variable selection ?
 To model the data Partial least squares is performed using the pls function.
 ``` {r model prediction}
 
-#pred.model <- plsr()
+# prediction model with crossvalidation included
+pred.model <- plsr(Activity_score ~ . , data=train.norm, validation = "CV")      
+summary(pred.model)
+
+# Prediction 
+pls.train <- as.data.frame(predict(pred.model, ncomp = 10, newdata = train.norm))
+summary(pls.train)
+pls.test <- as.data.frame(predict(pred.model, ncomp = 10, newdata = test.norm))
+summary(pls.test)
 
 ``` 
 
