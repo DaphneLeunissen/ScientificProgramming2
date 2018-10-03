@@ -11,7 +11,7 @@ This is an R Markdown document of assignment 2 Making multivariate statistics re
 The first step is installing and loading packages. 
 ``` {r packages}
 
-# install package
+# installing packages
 #install.packages("pls")
 #install.packages("caret")
 
@@ -23,7 +23,7 @@ library(caret)
 ```
 
 ### Import data
-Next I need to set my working directory and will import the datatable as well as the descriptors file.
+Next I need to set my working directory and import the datatable as well as the descriptors file.
 ```{r setup}
 
 # set working directory
@@ -42,11 +42,10 @@ The columns that contain only zeros/NA values will be removed. Also the other NA
 ``` {r preprocessing}
 
 # remove all columns with all zeros
-
-
+descriptors1 <- descriptors[,-(which(colSums(descriptors) == 0))] 
 
 # remove all columns full of NA values
-
+descriptors2 <- descriptors1[, colSums(descriptors1 != 0, na.rm = TRUE) > 0]
 
 ```
 
@@ -54,7 +53,7 @@ The columns that contain only zeros/NA values will be removed. Also the other NA
 The molSIDs from the descriptors file are matches with the PUBCHEM_SID in the datatable file. After which the activity score will be extracted from the datatable file and added to the descriptors file. 
 ``` {r activity score}
 # match SIDs
-row.numbers <- as.data.frame(match(descriptors[,1], data.raw[,1]))
+row.numbers <- as.data.frame(match(descriptors2[,1], data.raw[,1]))
 colnames(row.numbers) <- "matching row numbers"
 
 #extract activity score of these row numbers
@@ -62,7 +61,7 @@ activity.score <- as.data.frame(data.raw[row.numbers[,1], 4])
 colnames(activity.score) <- "Activity_score"
 
 # add activity score to descriptors matrix
-descriptors2 <- cbind(descriptors, activity.score)
+descriptors3 <- cbind(descriptors2, activity.score)
 
 ``` 
 
@@ -70,14 +69,13 @@ descriptors2 <- cbind(descriptors, activity.score)
 Divide the data in training and test set, 80% and 20% respectively  
 ``` {r processing}
 # randomly select 80% of the data to be part of the training set and use the rest of the sample for the test set
-# train.set3 <- descriptors2[sample(nrow(descriptors2), 840), ]
 
 set.seed(123)
 
-smp_size <- floor(0.80 * nrow(descriptors2))
-train.ind <- sample(nrow(descriptors2), size = smp_size)
-train.set <- descriptors2[train.ind, ]
-test.set <- descriptors2[-train.ind, ]
+smp_size <- floor(0.80 * nrow(descriptors3))
+train.ind <- sample(nrow(descriptors3), size = smp_size)
+train.set <- descriptors3[train.ind, ]
+test.set <- descriptors3[-train.ind, ]
 
 ``` 
 
