@@ -11,15 +11,17 @@ This is an R Markdown document of assignment 2 Making multivariate statistics re
 ### Loading packages
 The first step is installing and loading packages. 
 ``` {r packages}
+# Check for installed packages, when not present this code will install them.
+packages <- c("ggplot2", "caret", "pls", "rcdklibs")
+if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
+  install.packages(setdiff(packages, rownames(installed.packages())))  
+}
 
-# installing packages
-#install.packages("pls")
-#install.packages("caret")
-
-# load package
+# loading package
 library(rcdklibs)
 library(pls)
 library(caret)
+library(ggplot2)
 
 ```
 
