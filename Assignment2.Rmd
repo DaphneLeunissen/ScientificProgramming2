@@ -2,7 +2,7 @@
 title: "Scientific programming Assignment2"
 output: html_document
 author: Daphne Leunissen
-date: 5 October 2018
+date: 05-10-2018
 ---
 ## R Markdown
 
@@ -10,24 +10,26 @@ This is an R Markdown document of assignment 2 Making multivariate statistics re
 
 ### Loading packages
 The first step is installing and loading packages. 
-``` {r packages}
+```{r message=FALSE}
 # Check for installed packages, when not present this code will install them.
-packages <- c("ggplot2", "caret", "pls", "rcdklibs")
+packages <- c("ggplot2", "caret", "pls")
 if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
   install.packages(setdiff(packages, rownames(installed.packages())))  
 }
 
 # loading package
-library(rcdklibs)
+# pls: designed to perform principal component regression and partial least squares regression
 library(pls)
+# caret: Classification and Regression training: containing functions to tune a model training process
 library(caret)
+# ggplot2: a package for creating graphics
 library(ggplot2)
 
 ```
 
 ### Import data
 Next I need to set my working directory and import the datatable as well as the descriptors file.
-```{r setup}
+```{r}
 # set working directory
 setwd("C:\\Users\\daphn\\OneDrive\\Documenten\\Master Systems Biology\\Scientific programming\\assignment2\\")
 
@@ -40,8 +42,8 @@ descriptors <- read.csv("descriptors.txt", sep="\t", header = T, row.names = 1)
 ```
 
 ### Preprocessing data
-The columns that contain only zeros/NA values will be removed. Also the other NA values will be removed.
-``` {r preprocessing}
+The columns that contain NA values will be removed as well as the columns with a variance near zero. 
+```{r}
 # remove columns full of NA values
 descriptors1 <- descriptors[, colSums(descriptors != 0, na.rm = TRUE) > 0]
 
@@ -53,12 +55,12 @@ descriptors2   <- descriptors1[, -novar.col]
 
 ### Combining descriptor file with activity score
 The molSIDs from the descriptors file are matches with the PUBCHEM_SID in the datatable file. After which the activity score will be extracted from the datatable file and added to the descriptors file. 
-``` {r activity score}
-# match SIDs
+```{r}
+# match SIDs 
 row.numbers <- as.data.frame(match(descriptors2[,1], data.raw[,1]))
 colnames(row.numbers) <- "matching row numbers"
 
-#extract activity score of these row numbers
+# extract activity score of these row numbers
 activity.score <- as.data.frame(data.raw[row.numbers[,1], 4])
 colnames(activity.score) <- "Activity_score"
 
@@ -68,12 +70,12 @@ descriptors3 <- cbind(descriptors2, activity.score)
 ``` 
 
 ### Dividing the data
-Divide the data in training and test set, 80% and 20% respectively  
-``` {r processing}
-# randomly select 80% of the data to be part of the training set and use the rest of the sample for the test set
+Divide the data in training and test set, 80% and 20% respectively. 
+```{r}
+# make sure that the results are the same with every run
+set.seed(123) 
 
-set.seed(123)
-
+# randomly select 80% of the data for training set and use the rest for test set
 smp_size <- floor(0.80 * nrow(descriptors3))
 train.ind <- sample(nrow(descriptors3), size = smp_size)
 train.set <- descriptors3[train.ind, ]
@@ -83,39 +85,55 @@ test.set <- descriptors3[-train.ind, ]
 
 ### Scaling the data
 The data will be scaled using the scale function.
-``` {r normalization}
-# scaling without the activity score column?
-train.set1 <- train.set[,-247]
-test.set1 <- test.set[,-247]
-# scaling without the molSIDs column?
+```{r}
+# scaling should be done without activity score column and molSIDs column.
+# remove activity score column
+train.set1 <- train.set[,-140]
+test.set1 <- test.set[,-140]
+
+# remove molSIDs column
 train.set2 <- train.set1[,-1]
 test.set2 <- test.set1[,-1]
 
+# perform the scaling on the training and test set separatly
 train.norm <- as.data.frame(scale(train.set2), center = TRUE, scale = TRUE)
-#train.norm <- preProcess(train.set, method=c("center", "scale"))
 test.norm <- as.data.frame(scale(test.set2), center = TRUE, scale = TRUE)
+
+# add the activity score column back to the "normalized" data
+train.norm <- cbind(train.norm, train.set[,140])
+colnames(train.norm)[ncol(train.norm)] <- "Activity_score"
+test.norm <- cbind(test.norm, test.set[,140])
+colnames(test.norm)[ncol(test.norm)] <- "Activity_score"
+
+# save the activity scores in separate variable for later use
+train.score <- as.data.frame(train.norm$Activity_score)
+colnames(train.score) <- "Activity_score"
+test.score <- as.data.frame(test.norm$Activity_score)
+colnames(test.score) <- "Activity_score"
 
 ``` 
 
-
-
 ### Partial Least Squares
-To model the data Partial least squares is performed using the pls function.
-``` {r model prediction}
-# prediction model with crossvalidation included
-pred.model <- plsr(Activity_score ~ . , data=train.norm, validation = "CV")      
+To model the data, Partial least squares is performed using the pls package.
+```{r}
+# prediction model using plsr function including 10 components
+pred.model <- plsr(Activity_score ~ . , data=train.norm, ncomp = 10)       
 summary(pred.model)
 
-# Prediction 
-pls.train <- as.data.frame(predict(pred.model, ncomp = 10, newdata = train.norm))
-summary(pls.train)
-pls.test <- as.data.frame(predict(pred.model, ncomp = 10, newdata = test.norm))
-summary(pls.test)
+# exploratory scores plot of the components
+plot(pred.model, plottype = "scores", comps = 1:5)
 
-# save observed and predicted scores of test set together (easier for the plot)
+# exploratory activity plot of the components
+plot(RMSEP(pred.model))
+
+# Predict the response for the observations in test set using 5 components 
+pls.test <- as.data.frame(predict(pred.model, ncomp = 5, newdata = test.norm))
+
+# save observed and predicted scores of test set in results
 results <- cbind(test.score, pls.test)
 colnames(results)[1] <- "Observed"
 colnames(results)[2] <- "Predicted"
+
 # plot the results obtained from prediction model vs the actual activity scores
 ggplot(results, aes(x=Observed, y=Predicted)) + geom_point(size=2, shape=17) +
 ggtitle("Predicted vs observed (test set) activity score")
@@ -124,37 +142,38 @@ ggtitle("Predicted vs observed (test set) activity score")
 
 ### Crossvalidation
 Tuning the model using the caret package.
-``` {r crossvalidation}
+```{r}
 set.seed(12)  
-# save max number of components
+
+# max num of components
 max.comp <- 10
 
-# 10 fold cross validation
+# perform 10 fold cross validation
 cv <- trainControl(method = "cv",number=10)
-# Tuning a pls model 
-pls.cv <- train(train.norm, train.score$Activity_score,
+
+# Tuning a pls model with 10 fold cross validation
+pls.cv <- train(subset(train.norm,select=-c(Activity_score)), train.norm$Activity_score,
                  method = "pls",
                  tuneLength = max.comp,
                  trControl = cv)
 # plot the model
 plot(pls.cv)
 
-# prediction with test set
+# make the predictions for the test set
 pls.test1 <- as.data.frame(predict(pls.cv, test.norm))
 
 ``` 
 
 ### Including Plots
-Scatter plot of model predictions (PUBCHEM_ACTIVITY_SCORE vs experimental value).
-```{r plotting}
+Scatter plot of model predictions (predicted vs actual activity score).
+```{r}
 # save observed and prediction values together 
 results1 <- cbind(test.score, pls.test1)
 colnames(results1)[1] <- "Observed"
 colnames(results1)[2] <- "Predicted"
-# make a scatterplot using the ggplot function
+
+# make a scatterplot using the ggplot function, visualizing the predicted values vs the actual values. 
 ggplot(results1, aes(x=Observed, y=Predicted)) + geom_point(size=2, shape=17) + 
 ggtitle("Predicted vs observed (test set) activity score")
 
 ``` 
-
-
