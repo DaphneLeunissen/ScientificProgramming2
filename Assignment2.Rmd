@@ -111,6 +111,14 @@ summary(pls.train)
 pls.test <- as.data.frame(predict(pred.model, ncomp = 10, newdata = test.norm))
 summary(pls.test)
 
+# save observed and predicted scores of test set together (easier for the plot)
+results <- cbind(test.score, pls.test)
+colnames(results)[1] <- "Observed"
+colnames(results)[2] <- "Predicted"
+# plot the results obtained from prediction model vs the actual activity scores
+ggplot(results, aes(x=Observed, y=Predicted)) + geom_point(size=2, shape=17) +
+ggtitle("Predicted vs observed (test set) activity score")
+
 ``` 
 
 ### Crossvalidation
