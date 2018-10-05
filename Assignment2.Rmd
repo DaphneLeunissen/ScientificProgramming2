@@ -28,7 +28,6 @@ library(ggplot2)
 ### Import data
 Next I need to set my working directory and import the datatable as well as the descriptors file.
 ```{r setup}
-
 # set working directory
 setwd("C:\\Users\\daphn\\OneDrive\\Documenten\\Master Systems Biology\\Scientific programming\\assignment2\\")
 
@@ -98,12 +97,11 @@ test.norm <- as.data.frame(scale(test.set2), center = TRUE, scale = TRUE)
 
 ``` 
 
-Perform variable selection ?
+
 
 ### Partial Least Squares
 To model the data Partial least squares is performed using the pls function.
 ``` {r model prediction}
-
 # prediction model with crossvalidation included
 pred.model <- plsr(Activity_score ~ . , data=train.norm, validation = "CV")      
 summary(pred.model)
@@ -148,3 +146,15 @@ pls.test1 <- as.data.frame(predict(pls.cv, test.norm))
 
 ### Including Plots
 Scatter plot of model predictions (PUBCHEM_ACTIVITY_SCORE vs experimental value).
+```{r plotting}
+# save observed and prediction values together 
+results1 <- cbind(test.score, pls.test1)
+colnames(results1)[1] <- "Observed"
+colnames(results1)[2] <- "Predicted"
+# make a scatterplot using the ggplot function
+ggplot(results1, aes(x=Observed, y=Predicted)) + geom_point(size=2, shape=17) + 
+ggtitle("Predicted vs observed (test set) activity score")
+
+``` 
+
+
