@@ -1,13 +1,13 @@
-## Copyright file
+Copyright file
 
-### Data
-The data used for this assignment is public available and can be found in Pubchem open chemistry database: 
+Data
+The data used for this assignment is publicly available and can be found in Pubchem open chemistry database: 
 BioAssay Record for AID 624202. See this link: https://pubchem.ncbi.nlm.nih.gov/bioassay/624202#section=Top
 
-### Rstudio
-Creating this document was done in Rstudio with a RMarkdown file. Rstudio had a general public license, no copyright needed.
+Rstudio
+Creating this document was done in Rstudio with a RMarkdown file. Rstudio has a general public license, no copyright needed.
 
-### Packages
-* pls has a GPL-2 license, more information can be found here: https://cran.r-project.org/web/packages/pls/index.html 
-* caret has a GPL (>=2) license, more information can be found here: https://cran.r-project.org/web/packages/caret/caret.pdf 
-* ggplot2 has a GPL-2 license, more information can be found here: https://cran.r-project.org/web/packages/ggplot2/index.html 
+Packages
+- pls has a GPL-2 license, more information can be found here: https://cran.r-project.org/web/packages/pls/index.html 
+- caret has a GPL (>=2) license, more information can be found here: https://cran.r-project.org/web/packages/caret/caret.pdf 
+- ggplot2 has a GPL-2 license, more information can be found here: https://cran.r-project.org/web/packages/ggplot2/index.html 
