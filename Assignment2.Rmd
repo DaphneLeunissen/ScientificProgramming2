@@ -40,12 +40,12 @@ descriptors <- read.csv("descriptors.txt", sep="\t", header = T, row.names = 1)
 ### Preprocessing data
 The columns that contain only zeros/NA values will be removed. Also the other NA values will be removed.
 ``` {r preprocessing}
+# remove columns full of NA values
+descriptors1 <- descriptors[, colSums(descriptors != 0, na.rm = TRUE) > 0]
 
-# remove all columns with all zeros
-descriptors1 <- descriptors[,-(which(colSums(descriptors) == 0))] 
-
-# remove all columns full of NA values
-descriptors2 <- descriptors1[, colSums(descriptors1 != 0, na.rm = TRUE) > 0]
+# remove columns with a variance near zero using the nearZeroVar function (caret package)
+novar.col <- nearZeroVar(descriptors1)
+descriptors2   <- descriptors1[, -novar.col]
 
 ```
 
