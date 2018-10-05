@@ -2,6 +2,7 @@
 title: "Scientific programming Assignment2"
 output: html_document
 author: Daphne Leunissen
+date: 5 October 2018
 ---
 ## R Markdown
 
@@ -122,9 +123,24 @@ ggtitle("Predicted vs observed (test set) activity score")
 ``` 
 
 ### Crossvalidation
-Tuning the model. 
+Tuning the model using the caret package.
 ``` {r crossvalidation}
+set.seed(12)  
+# save max number of components
+max.comp <- 10
 
+# 10 fold cross validation
+cv <- trainControl(method = "cv",number=10)
+# Tuning a pls model 
+pls.cv <- train(train.norm, train.score$Activity_score,
+                 method = "pls",
+                 tuneLength = max.comp,
+                 trControl = cv)
+# plot the model
+plot(pls.cv)
+
+# prediction with test set
+pls.test1 <- as.data.frame(predict(pls.cv, test.norm))
 
 ``` 
 
